@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\user\createUser;
 use App\Http\Requests\user\createUserRequest;
+use App\Http\Requests\user\updateUserRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -14,11 +16,10 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
         $users = User::all();
-        return $users;
+        return UserResource::collection($users);
     }
 
     /**
@@ -26,14 +27,12 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create(createUserRequest $request)
+    public function create(CreateUserRequest $request)
     {
-        //
-
         $user = User::create([
             'name'=>$request->name,
             'email'=>$request->email,
-            'password'=>bcrypt($request->password)
+            'password'=>Hash::make($request->password),
         ]);
         return $user;
     }
@@ -55,9 +54,11 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($user)
     {
-        //
+        $user = User::findOrFail($user);
+        $user = new UserResource($user);
+        return $user;
     }
 
     /**
@@ -78,9 +79,17 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UpdateUserRequest $request, $user)
     {
         //
+        $data = $request->only(['name','password']);
+        if (!empty($data['password'])){
+            $data['password']=Hash::make($request->password);
+        }
+        $user = User::FindOrFail($user);
+        $user->update($data);
+
+        return $user;
     }
 
     /**
@@ -89,8 +98,10 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request,$user)
     {
         //
+        $user = User::findOrFail($user);
+        $user->delete();
     }
 }

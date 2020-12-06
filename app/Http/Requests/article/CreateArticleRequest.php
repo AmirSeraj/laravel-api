@@ -25,7 +25,7 @@ class createArticleRequest extends FormRequest
     {
         return [
             //
-            'title'=>'required|string|min:10|max:50',
+            'title'=>'required|string|min:10|max:50|unique:articles',
             'body'=>'required|string'
         ];
     }

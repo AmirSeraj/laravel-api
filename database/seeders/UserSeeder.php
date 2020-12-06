@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Carbon\Carbon;
 use Faker\Generator;
 use Illuminate\Database\Seeder;
@@ -17,14 +18,6 @@ class UserSeeder extends Seeder
     public function run(Generator $faker)
     {
         //
-        for ($i=0;$i<5;$i++){
-            DB::table('users')->insert([
-                'name'=>$faker->name,
-                'email'=>$faker->unique()->safeEmail,
-                'password'=>bcrypt('secret'),
-                'created_at'=>Carbon::now(),
-                'updated_at'=>Carbon::now(),
-            ]);
-        }
+        User::factory(5)->create();
     }
 }

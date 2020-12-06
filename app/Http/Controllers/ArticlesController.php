@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\article\createArticleRequest;
+use App\Http\Requests\article\updateArticleRequest;
+use App\Http\Resources\ArticleResource;
 use App\Models\Article;
 use Illuminate\Http\Request;
 
@@ -17,6 +19,7 @@ class ArticlesController extends Controller
     {
         //
         $articles = Article::all();
+        $articles = ArticleResource::collection($articles);
         return $articles;
     }
 
@@ -25,13 +28,17 @@ class ArticlesController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create(createArticleRequest $request)
+    public function create(CreateArticleRequest $request)
     {
         //
+        $user = auth('api')->user();
+        $request->validate([
+            'title'=>'required|string|min:10|max:50|unique:articles',
+            'body'=>'required|string'
+        ]);
         $data = $request->all();
-        $data['user_id']=1;
-        $article = Article::create($data);
-        return $article;
+        $data['user_id'] = $user['id'];
+        return Article::create($data);
     }
 
     /**
@@ -51,9 +58,11 @@ class ArticlesController extends Controller
      * @param  \App\Models\Article  $articles
      * @return \Illuminate\Http\Response
      */
-    public function show(Article $articles)
+    public function show($article)
     {
-        //
+        $article = Article::findOrFail($article);
+        $article = new ArticleResource($article);
+        return $article;
     }
 
     /**
@@ -74,9 +83,13 @@ class ArticlesController extends Controller
      * @param  \App\Models\Article  $articles
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Article $articles)
+    public function update(UpdateArticleRequest $request, $article)
     {
-        //
+        $data = $request->all();
+        $data['user_id']=1;
+        $article = Article::findOrFail($article);
+        $article->update($data);
+        return $article;
     }
 
     /**
@@ -85,8 +98,10 @@ class ArticlesController extends Controller
      * @param  \App\Models\Article  $articles
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Article $articles)
+    public function destroy($article)
     {
         //
+        $article = Article::FindOrFail($article);
+        $article->delete();
     }
 }
